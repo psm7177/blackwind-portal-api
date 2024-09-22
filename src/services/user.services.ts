@@ -19,8 +19,8 @@ export class UserService {
         return this.userRepository.find();
     }
 
-    async findOne(id: string): Promise<User> {
-        return this.userRepository.findOne({ where: { id } });
+    async findOne(email: string): Promise<User> {
+        return this.userRepository.findOne({ where: { email } });
     }
 
     async create(dto: CreateUserDto): Promise<UserDetailDto> {
@@ -29,9 +29,10 @@ export class UserService {
         user.email = dto.email;
         user.department = dto.department;
         user.studentId = dto.studentId;
+        user.password = dto.password;
 
         user = await this.userRepository.save(user);
-        
+
         return {
             id: user.id,
             status: user.status,
@@ -43,5 +44,5 @@ export class UserService {
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
         }
-    }    
+    }
 }

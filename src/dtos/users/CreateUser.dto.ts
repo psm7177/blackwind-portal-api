@@ -3,4 +3,5 @@ export interface CreateUserDto {
   email: string;
   department: string;
   studentId: string;
+  password: string;
 }

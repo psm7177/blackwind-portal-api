@@ -27,6 +27,7 @@ export class AuthService {
             email: registerDto.email,
             department: registerDto.department,
             studentId: registerDto.studentId,
+            password: registerDto.password, // TODO: encrypt password
         });
 
         // TODO: send email to user
