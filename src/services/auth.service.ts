@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { RegisterDto } from 'src/dtos/auths/Register.dto';
 import { UserService } from './user.services';
 import { AuthDetailDto } from 'src/dtos/auths/AuthDetail.dto';
 import { LoginDto } from 'src/dtos/auths/Login.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -11,20 +12,32 @@ export class AuthService {
     ) { }
 
     async register(registerDto: RegisterDto): Promise<AuthDetailDto> {
-        // check if user already exists 
-        let existingUser = await this.userService.findOne(registerDto.email);
+        // Check if user already exists 
+        const existingUser = await this.userService.findOne(registerDto.email);
         if (existingUser) {
-            throw new Error('User already exists'); // TODO: change to http exception
+            throw new ConflictException('User already exists');
         }
-        // TODO: check email validation (dgist email)
-        // TODO: check password validation (length, special character, etc)
 
+        // Check for valid email (DGIST-specific)
+        if (!registerDto.email.endsWith('@dgist.ac.kr')) {
+            throw new BadRequestException('Invalid email domain. Please use a DGIST email.');
+        }
+
+        // Validate password (length, special character, etc.)
+        if (!this.isValidPassword(registerDto.password)) {
+            throw new BadRequestException('Password must be at least 8 characters long and contain a special character.');
+        }
+
+        // Encrypt password
+        const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+
+        // Create new user
         const newUser = await this.userService.create({
             name: registerDto.name,
             email: registerDto.email,
             department: registerDto.department,
             studentId: registerDto.studentId,
-            password: registerDto.password, // TODO: encrypt password
+            password: hashedPassword, 
         });
 
         // TODO: send email to user
@@ -42,13 +55,15 @@ export class AuthService {
                 createdAt: newUser.createdAt,
                 updatedAt: newUser.updatedAt,
             }
-        }
+        };
     }
-    async login(loginDto: LoginDto): Promise<AuthDetailDto>{
+
+    async login(loginDto: LoginDto): Promise<AuthDetailDto> {
         const user = await this.userService.findOne(loginDto.email);
 
-        if(!user || user.password !== loginDto.password){
-            throw new Error('Email and password do not match'); // TODO: change to http exception
+        // Check if user exists and verify password
+        if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
+            throw new UnauthorizedException('Email and password do not match');
         }
 
         return {
@@ -61,6 +76,12 @@ export class AuthService {
                 createdAt: user.createdAt,
                 updatedAt: user.updatedAt,
             }
-        }
+        };
     }
-}   
+
+    private isValidPassword(password: string): boolean {
+        // Example validation: at least 8 characters, one special character
+        const regex = /^(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+        return regex.test(password);
+    }
+}
