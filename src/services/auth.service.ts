@@ -1,11 +1,8 @@
-// write auth service
-
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../models/User.entity';
 import { RegisterDto } from 'src/dtos/auths/Register.dto';
 import { UserService } from './user.services';
 import { AuthDetailDto } from 'src/dtos/auths/AuthDetail.dto';
+import { LoginDto } from 'src/dtos/auths/Login.dto';
 
 @Injectable()
 export class AuthService {
@@ -44,6 +41,25 @@ export class AuthService {
                 studentId: newUser.studentId,
                 createdAt: newUser.createdAt,
                 updatedAt: newUser.updatedAt,
+            }
+        }
+    }
+    async login(loginDto: LoginDto): Promise<AuthDetailDto>{
+        const user = await this.userService.findOne(loginDto.email);
+
+        if(!user || user.password !== loginDto.password){
+            throw new Error('Email and password do not match'); // TODO: change to http exception
+        }
+
+        return {
+            success: true,
+            user: {
+                id: user.id.toString(),
+                status: user.status,
+                role: user.role,
+                department: user.department,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
             }
         }
     }
