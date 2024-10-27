@@ -4,6 +4,8 @@ import { UserService } from './user.services';
 import { AuthDetailDto } from 'src/dtos/auths/AuthDetail.dto';
 import { LoginDto } from 'src/dtos/auths/Login.dto';
 import * as bcrypt from 'bcrypt';
+import { NotImplementedException } from '@nestjs/common/exceptions';
+import { VerifyDto } from 'src/dtos/auths/Verify.dto';
 
 @Injectable()
 export class AuthService {
@@ -37,7 +39,7 @@ export class AuthService {
             email: registerDto.email,
             department: registerDto.department,
             studentId: registerDto.studentId,
-            password: hashedPassword, 
+            password: hashedPassword,
         });
 
         // TODO: send email to user
@@ -77,6 +79,10 @@ export class AuthService {
                 updatedAt: user.updatedAt,
             }
         };
+    }
+
+    async verify(dto: VerifyDto): Promise<AuthDetailDto> {
+        throw new NotImplementedException();
     }
 
     private isValidPassword(password: string): boolean {

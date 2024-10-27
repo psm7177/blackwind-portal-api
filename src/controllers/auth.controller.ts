@@ -4,6 +4,7 @@ import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthDetailDto } from 'src/dtos/auths/AuthDetail.dto';
 import { LoginDto } from 'src/dtos/auths/Login.dto';
 import { RegisterDto } from 'src/dtos/auths/Register.dto';
+import { VerifyDto } from 'src/dtos/auths/Verify.dto';
 import { AuthService } from 'src/services/auth.service';
 
 @ApiTags('auth')
@@ -39,7 +40,12 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() loginDto: LoginDto): Promise<AuthDetailDto>{
+  async login(@Body() loginDto: LoginDto): Promise<AuthDetailDto> {
     return this.authService.login(loginDto);
+  }
+
+  @Post('verify')
+  async verify(@Body() verifyDto: VerifyDto): Promise<AuthDetailDto> {
+    return this.authService.verify(verifyDto);
   }
 }
