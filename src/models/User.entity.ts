@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  BeforeInsert,
 } from 'typeorm';
 
 
@@ -18,6 +19,8 @@ export enum UserStatus {
   BANNED = 'banned',
   SLEEP = 'sleep'
 }
+
+import * as crypto from 'crypto';
 
 @Entity()
 export class User {
@@ -50,7 +53,11 @@ export class User {
 
   @Column({ default: false, unique: true })
   studentId: string;
-  
-  // @Column({ default: false })
-  // verificationToken: string;  
+
+  @Column({ nullable: true })
+  verificationCode: string;
+
+  generateVerificationCode() {
+    this.verificationCode = crypto.randomBytes(16).toString('hex'); // 32자리 랜덤 문자열 생성
+  }
 }

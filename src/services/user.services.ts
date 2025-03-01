@@ -1,8 +1,6 @@
-// write user service
-
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 import { User } from '../models/User.entity';
 import { CreateUserDto } from 'src/dtos/users/CreateUser.dto';
 import { UserDetailDto } from 'src/dtos/users/UserDetail.dto';
@@ -19,11 +17,22 @@ export class UserService {
         return this.userRepository.find();
     }
 
-    async findOne(email: string): Promise<User> {
+    async findByEmail(email: string): Promise<User> {
         return this.userRepository.findOne({ where: { email } });
     }
 
-    async create(dto: CreateUserDto): Promise<UserDetailDto> {
+    async findById(id: string): Promise<User> {
+        return this.userRepository.findOne({
+            where: { id },
+        });
+    }
+
+    async create(dto: CreateUserDto): Promise<User> {
+        const user = await this.newUser(dto);
+        return this.save(user);
+    }
+
+    async newUser(dto: CreateUserDto): Promise<User> {
         let user = new User();
         user.name = dto.name;
         user.email = dto.email;
@@ -31,18 +40,15 @@ export class UserService {
         user.studentId = dto.studentId;
         user.password = dto.password;
 
-        user = await this.userRepository.save(user);
+        user.generateVerificationCode();
+        return user;
+    }
 
-        return {
-            id: user.id,
-            status: user.status,
-            role: user.role,
-            name: user.name,
-            email: user.email,
-            department: user.department,
-            studentId: user.studentId,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
-        }
+    async save(user: User): Promise<User> {
+        return this.userRepository.save(user);
+    }
+
+    async findOne(options: FindOneOptions<User>) {
+        return this.userRepository.findOne(options);
     }
 }

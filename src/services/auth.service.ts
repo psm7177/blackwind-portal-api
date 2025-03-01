@@ -4,18 +4,24 @@ import { UserService } from './user.services';
 import { AuthDetailDto } from 'src/dtos/auths/AuthDetail.dto';
 import { LoginDto } from 'src/dtos/auths/Login.dto';
 import * as bcrypt from 'bcrypt';
-import { NotImplementedException } from '@nestjs/common/exceptions';
+import { ForbiddenException } from '@nestjs/common/exceptions';
 import { VerifyDto } from 'src/dtos/auths/Verify.dto';
+import { JwtService } from '@nestjs/jwt';
+import { LoginResponseDto } from 'src/dtos/auths/LoginResponse.dto';
+import { MailService } from './email.service';
+import { User, UserStatus } from 'src/models/User.entity';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly userService: UserService,
+        private jwtService: JwtService,
+        private mailService: MailService
     ) { }
 
     async register(registerDto: RegisterDto): Promise<AuthDetailDto> {
         // Check if user already exists 
-        const existingUser = await this.userService.findOne(registerDto.email);
+        const existingUser = await this.userService.findByEmail(registerDto.email);
         if (existingUser) {
             throw new ConflictException('User already exists');
         }
@@ -34,15 +40,18 @@ export class AuthService {
         const hashedPassword = await bcrypt.hash(registerDto.password, 10);
 
         // Create new user
-        const newUser = await this.userService.create({
+        const newUser = await this.userService.newUser({
             name: registerDto.name,
             email: registerDto.email,
             department: registerDto.department,
             studentId: registerDto.studentId,
             password: hashedPassword,
         });
-
+        
         // TODO: send email to user
+        await this.mailService.sendVerification(newUser);
+
+        await this.userService.save(newUser);
 
         return {
             success: true,
@@ -60,14 +69,46 @@ export class AuthService {
         };
     }
 
-    async login(loginDto: LoginDto): Promise<AuthDetailDto> {
-        const user = await this.userService.findOne(loginDto.email);
+    async login(loginDto: LoginDto): Promise<LoginResponseDto> {
+        const user = await this.userService.findByEmail(loginDto.email);
 
         // Check if user exists and verify password
         if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
             throw new UnauthorizedException('Email and password do not match');
         }
+        
+        if (user.status !== UserStatus.ACTIVE) {
+            throw new ForbiddenException('Your account is not active.');
+        }
 
+        // const userDto = {
+        //     id: user.id.toString(),
+        //     status: user.status,
+        //     role: user.role,
+        //     department: user.department,
+        //     createdAt: user.createdAt,
+        //     updatedAt: user.updatedAt,
+        // }
+
+        const payload = { username: user.name, sub: user.id }
+
+        return {
+            success: true,
+            accessToken: this.jwtService.sign(payload)
+        };
+    }
+
+    async verify(dto: VerifyDto): Promise<AuthDetailDto> {
+        const user = await this.userService.findOne({ where: { verificationCode: dto.code } });
+
+        // Check if user exists and verify password
+        if (!user) {
+            throw new UnauthorizedException('Email and password do not match');
+        }
+
+        user.status = UserStatus.ACTIVE;
+
+        await this.userService.save(user);
         return {
             success: true,
             user: {
@@ -78,11 +119,7 @@ export class AuthService {
                 createdAt: user.createdAt,
                 updatedAt: user.updatedAt,
             }
-        };
-    }
-
-    async verify(dto: VerifyDto): Promise<AuthDetailDto> {
-        throw new NotImplementedException();
+        }
     }
 
     private isValidPassword(password: string): boolean {

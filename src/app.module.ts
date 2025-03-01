@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth.module';
@@ -7,6 +7,9 @@ import { BotModule } from './modules/bot.module';
 import { DiscordModule } from '@discord-nestjs/core';
 import { GatewayIntentBits } from 'discord.js';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { RouterModule } from '@nestjs/core';
+import { DiscordUserModule } from './modules/discordUser.module';
+import { JwtMiddleware } from './middleware/jwt.middleware';
 
 @Module({
   imports: [
@@ -35,8 +38,18 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     }),
     AuthModule,
     BotModule,
+    RouterModule.register([{
+      path: '',
+      module: DiscordUserModule
+    }])
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(JwtMiddleware)
+      .forRoutes('user'); // 'match' 경로에 JWT 미들웨어 적용
+  }
+}
