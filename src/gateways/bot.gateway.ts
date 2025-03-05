@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Once, InjectDiscordClient } from '@discord-nestjs/core';
-import { Client } from 'discord.js';
+import { Once, InjectDiscordClient, On } from '@discord-nestjs/core';
+import { Client, Events, GuildMember } from 'discord.js';
 
 @Injectable()
 export class BotGateway {
@@ -11,8 +11,13 @@ export class BotGateway {
     private readonly client: Client,
   ) {}
 
-  @Once('ready')
+  @Once(Events.ClientReady)
   onReady() {
     this.logger.log(`Bot ${this.client.user.tag} was started!`);
+    // check server id
+  }
+  @On(Events.GuildMemberAdd)
+  onUserUpdate(member: GuildMember){
+    this.logger.log(`Hello ${member.nickname}`);
   }
 }

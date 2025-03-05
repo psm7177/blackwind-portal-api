@@ -3,13 +3,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { BotModule } from './modules/bot.module';
-import { DiscordModule } from '@discord-nestjs/core';
-import { GatewayIntentBits } from 'discord.js';
+
+
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { RouterModule } from '@nestjs/core';
-import { DiscordUserModule } from './modules/discordUser.module';
 import { JwtMiddleware } from './middleware/jwt.middleware';
+import { DiscordBotModule } from './bots/discordBot.module';
 
 @Module({
   imports: [
@@ -26,22 +24,8 @@ import { JwtMiddleware } from './middleware/jwt.middleware';
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
-    DiscordModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        token: configService.get<string>('DISCORD_TOKEN'),
-        discordClientOptions: {
-          intents: [GatewayIntentBits.Guilds],
-        },
-      }),
-    }),
     AuthModule,
-    BotModule,
-    RouterModule.register([{
-      path: '',
-      module: DiscordUserModule
-    }])
+    DiscordBotModule,
   ],
   controllers: [AppController],
   providers: [AppService],
