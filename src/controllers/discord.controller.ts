@@ -2,7 +2,7 @@ import { Controller, Put, UseGuards, Request } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 import { RegistrationDto } from "src/dtos/discord/registration.dto";
-import { DiscordUserService } from "src/services/discord/discordUser.service";
+import { DiscordUserService } from "src/bots/services/discord-user.service";
 
 @ApiTags('discord')
 @Controller('user/discord')

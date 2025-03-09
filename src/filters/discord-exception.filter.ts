@@ -8,7 +8,7 @@ export class DiscordExceptionFilter extends BaseExceptionFilter {
     const ctx = host.getArgByIndex<CommandInteraction>(0);
 
     if (ctx instanceof CommandInteraction) {
-      ctx.reply(exception.message || '알 수 없는 오류가 발생했습니다.');
+      ctx.reply({ content: exception.message || '알 수 없는 오류가 발생했습니다.', ephemeral: true });
     }
   }
 }

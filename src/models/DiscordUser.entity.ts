@@ -10,8 +10,8 @@ export class DiscordUser {
     @JoinColumn()
     user: User
 
-    @Column({ nullable: true })
-    discordUserId: number;
+    @Column({ unique: true })
+    discordUserId: string;
 
     @Column()
     verificationNumber: number; // 8 digits

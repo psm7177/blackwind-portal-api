@@ -3,7 +3,7 @@ import { DiscordModule } from '@discord-nestjs/core';
 import { BotGateway } from 'src/gateways/bot.gateway';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GatewayIntentBits, Message } from 'discord.js';
-import { CommandsModule } from './commands/command.module';
+import { CommandsModule } from './modules/command.module';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { DiscordExceptionFilter } from 'src/filters/discord-exception.filter';
 import { GuildOnlyGuard } from './guards/guild-only.guard';

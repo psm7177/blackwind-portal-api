@@ -1,7 +1,7 @@
 import { Command, Handler } from '@discord-nestjs/core';
-import { Injectable, UseGuards } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CommandInteraction } from 'discord.js';
-import { GuildOnlyGuard } from '../guards/guild-only.guard';
+import { DiscordUserService } from 'src/bots/services/discord-user.service';
 
 @Command({
     name: 'registration',
@@ -9,19 +9,15 @@ import { GuildOnlyGuard } from '../guards/guild-only.guard';
 })
 @Injectable()
 export class RegistrationCommand {
-    constructor() { }
+    constructor(private readonly discordUserService: DiscordUserService) { }
 
     @Handler()
     // @UseGuards(GuildOnlyGuard)
     async onRegistration(
         interaction: CommandInteraction
-        // @InteractionEvent() interaction: ChatInputCommandInteraction, // Interaction 객체 가져오기
     ): Promise<string> {
-        const channel = await interaction.user.createDM(true);
-
-        channel.send('http://localhost:3000');
-        interaction.reply({ content: 'DM을 확인하세요!', ephemeral: true })
-        
+        // get id from interaction
+        await this.discordUserService.create(interaction);
         return '';
     }
 }

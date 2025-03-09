@@ -7,7 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtMiddleware } from './middleware/jwt.middleware';
-import { DiscordBotModule } from './bots/discordBot.module';
+import { DiscordBotModule } from './bots/discord-bot.module';
 
 @Module({
   imports: [

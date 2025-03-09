@@ -15,7 +15,7 @@ export class GuildOnlyGuard implements CanActivate {
 
     // DM인지 확인 후 차단
     if (!message.guild) {
-      throw new InvalidAccessException();
+      throw new InvalidAccessException("'이 명령어는 서버에서만 사용할 수 있습니다.'");
     }
 
     return true;
