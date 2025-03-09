@@ -20,4 +20,9 @@ export class BotGateway {
   onUserUpdate(member: GuildMember){
     this.logger.log(`Hello ${member.nickname}`);
   }
+
+  // @On(Events.ApplicationCommandPermissionsUpdate)
+  // onCommandPermissionsUpdate() {
+  //   this.logger.log('Command permissions updated!');
+  // }
 }

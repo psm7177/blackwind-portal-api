@@ -8,6 +8,11 @@ import { GuildOnlyGuard } from '../guards/guild-only.guard';
 @Command({
     name: 'registration',
     description: 'User registration',
+    nameLocalizations: {
+        "en-US": 'registration',
+        "ko": '등록'
+    },
+    // forGuild: process.env.GUILD_ID
 })
 @Injectable()
 @UseFilters(DiscordExceptionFilter)
@@ -19,7 +24,6 @@ export class RegistrationCommand {
     async onRegistration(
         interaction: CommandInteraction
     ): Promise<string> {
-        // get id from interaction
         await this.discordUserService.create(interaction);
         return '';
     }
