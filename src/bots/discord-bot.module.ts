@@ -33,10 +33,10 @@ import { GuildOnlyGuard } from './guards/guild-only.guard';
     //   provide: APP_FILTER,
     //   useClass: DiscordExceptionFilter,
     // },
-    {
-      provide: APP_GUARD,
-      useClass: GuildOnlyGuard, // 모든 명령어에 자동 적용
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: GuildOnlyGuard, // 모든 명령어에 자동 적용
+    // },
   ],
 })
 export class DiscordBotModule { }

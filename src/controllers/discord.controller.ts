@@ -13,7 +13,7 @@ export class DiscordController {
     @Options('sync')
     @UseGuards(JwtAuthGuard)
     async registerDiscordUser(@Body() dto: RegistrationDto, @Request() req) {
-        this.discordUserService.sync(dto, req.user);
+        return this.discordUserService.sync(dto, req.user);
     }
 }
 

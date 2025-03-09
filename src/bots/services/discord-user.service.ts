@@ -1,15 +1,13 @@
-// create code
-
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { CommandInteraction } from "discord.js";
+
 import { RegistrationDto } from "src/dtos/discord/registration.dto";
 import { DiscordUser } from "src/models/DiscordUser.entity";
 import { User } from "src/models/User.entity";
-import { Repository } from "typeorm";
 import { InvalidAccessException } from "../exceptions/invaild-access.exception";
-import { CommandInteraction } from "discord.js";
 
-// connect code
 @Injectable()
 export class DiscordUserService {
     constructor(
@@ -19,51 +17,47 @@ export class DiscordUserService {
 
     async create(interaction: CommandInteraction) {
         const discordUserId = interaction.user.id;
-        const discordUser = await this.discordUserRepository.findOne({
-            where: {
-                discordUserId
-            }
-        });
+        let discordUser = await this.discordUserRepository.findOne({ where: { discordUserId }, relations: ["user"] });
 
-        if (discordUser.user) {
-            throw new InvalidAccessException("이미 등록된 유저 입니다. 해당 유저는 존재 합니다.");
+        if (discordUser?.user) {
+            throw new InvalidAccessException("이미 등록된 유저입니다.");
         }
 
-        if (discordUser) {
-            throw new InvalidAccessException("이미 등록된 유저 입니다. 해당 유저는 존재 합니다.");
-        }
-        const newDiscordUser = new DiscordUser();
-
-        newDiscordUser.discordUserId = discordUserId;
-
-        const verificationCode = Math.floor(10000000 + Math.random() * 90000000);
-        newDiscordUser.verificationCode = verificationCode;
-
-        // Optionally save the entity if needed
-        await this.discordUserRepository.save(newDiscordUser);
-
-        const channel = await interaction.user.createDM(true);
-        channel.send(`http://localhost:3000/discord/sync/${verificationCode}`);
-
-        interaction.reply({ content: 'DM을 확인하세요!', ephemeral: true });
-
-        return {
-            verificationCode: newDiscordUser.verificationCode
-        };
-    }
-    async sync(dto: RegistrationDto, user: User) {
-        const discordUser = await this.discordUserRepository.findOne({
-            where: {
-                verificationCode: dto.verificationCode
-            }
-        });
+        // 새 사용자라면 등록 코드 생성
+        const verificationCode = discordUser?.verificationCode ?? this.generateVerificationCode();
 
         if (!discordUser) {
-            throw new InvalidAccessException("해당 유저는 존재하지 않습니다.");
+            discordUser = this.discordUserRepository.create({ discordUserId, verificationCode });
+            await this.discordUserRepository.save(discordUser);
+        }
+
+        await this.sendVerificationDM(interaction, verificationCode);
+        return { verificationCode };
+    }
+
+    async sync(dto: RegistrationDto, user: User) {
+        const discordUser = await this.discordUserRepository.findOne({ where: { verificationCode: dto.verificationCode }, relations: ["user"] });
+
+        if (!discordUser) {
+            throw new InvalidAccessException("인증 코드가 유효하지 않습니다.");
+        }
+
+        if (discordUser.user) {
+            throw new InvalidAccessException("이미 등록된 유저입니다.");
         }
 
         discordUser.user = user;
-
         await this.discordUserRepository.save(discordUser);
+        return { success: true };
+    }
+
+    private generateVerificationCode(): number {
+        return Math.floor(10000000 + Math.random() * 90000000);
+    }
+
+    private async sendVerificationDM(interaction: CommandInteraction, verificationCode: number) {
+        const channel = await interaction.user.createDM(true);
+        await channel.send(`http://localhost:3000/discord/sync/${verificationCode}`);
+        await interaction.reply({ content: "DM을 확인하세요!", ephemeral: true });
     }
 }
