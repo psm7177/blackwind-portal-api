@@ -29,10 +29,10 @@ import { GuildOnlyGuard } from './guards/guild-only.guard';
     CommandsModule, // 커맨드를 처리하는 모듈을 임포트합니다
   ],
   providers: [BotGateway,
-    {
-      provide: APP_FILTER,
-      useClass: DiscordExceptionFilter,
-    },
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: DiscordExceptionFilter,
+    // },
     {
       provide: APP_GUARD,
       useClass: GuildOnlyGuard, // 모든 명령어에 자동 적용

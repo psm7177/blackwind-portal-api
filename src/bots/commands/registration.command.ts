@@ -1,13 +1,15 @@
 import { Command, Handler } from '@discord-nestjs/core';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UseFilters } from '@nestjs/common';
 import { CommandInteraction } from 'discord.js';
 import { DiscordUserService } from 'src/bots/services/discord-user.service';
+import { DiscordExceptionFilter } from 'src/filters/discord-exception.filter';
 
 @Command({
     name: 'registration',
     description: 'User registration',
 })
 @Injectable()
+@UseFilters(DiscordExceptionFilter)
 export class RegistrationCommand {
     constructor(private readonly discordUserService: DiscordUserService) { }
 

@@ -1,17 +1,19 @@
-import { Controller, Put, UseGuards, Request } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
+import { Controller, UseGuards, Request, Options, Body, UseFilters } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
-import { RegistrationDto } from "src/dtos/discord/registration.dto";
 import { DiscordUserService } from "src/bots/services/discord-user.service";
+import { RegistrationDto } from "src/dtos/discord/registration.dto";
 
 @ApiTags('discord')
-@Controller('user/discord')
+@Controller('discord')
+@ApiBearerAuth()
 export class DiscordController {
     constructor(private readonly discordUserService: DiscordUserService) { }
 
-    @Put('discordUser')
+    @Options('sync')
     @UseGuards(JwtAuthGuard)
-    async registerDiscordUser(dto: RegistrationDto, @Request() req) {
-        this.discordUserService.connect(dto, req.user);
+    async registerDiscordUser(@Body() dto: RegistrationDto, @Request() req) {
+        this.discordUserService.sync(dto, req.user);
     }
 }
+

@@ -5,9 +5,9 @@ import { AuthModule } from './modules/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { JwtMiddleware } from './middleware/jwt.middleware';
-import { DiscordBotModule } from './bots/discord-bot.module';
+import { DiscordModule } from './modules/discord.module';
 
 @Module({
   imports: [
@@ -25,7 +25,7 @@ import { DiscordBotModule } from './bots/discord-bot.module';
       synchronize: true,
     }),
     AuthModule,
-    DiscordBotModule,
+    DiscordModule
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -34,6 +34,6 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(JwtMiddleware)
-      .forRoutes('user'); // 'match' 경로에 JWT 미들웨어 적용
+      .forRoutes('discord'); // 'match' 경로에 JWT 미들웨어 적용
   }
 }

@@ -17,6 +17,7 @@ import { MailModule } from './email.module';
             useFactory: async (configService: ConfigService) => ({
                 secret: configService.get<string>('JWT_SECRET'), // 환경 변수에서 비밀 키 가져오기
                 signOptions: { expiresIn: '1h' }, // 토큰 만료 시간 설정
+                // global: true,
             }),
             inject: [ConfigService],
         }),

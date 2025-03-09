@@ -1,6 +1,7 @@
-import { Param } from '@discord-nestjs/core';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 export class RegistrationDto {
-    @Param({ description: 'verify code', required: true })
-    verificationCode: string;
+    @ApiProperty({ description: 'verify code', required: true })
+    verificationCode: number;
 }

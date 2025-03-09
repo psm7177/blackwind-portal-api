@@ -14,5 +14,5 @@ export class DiscordUser {
     discordUserId: string;
 
     @Column()
-    verificationNumber: number; // 8 digits
+    verificationCode: number; // 8 digits
 }

@@ -36,22 +36,34 @@ export class DiscordUserService {
 
         newDiscordUser.discordUserId = discordUserId;
 
-        const verificationNumber = Math.floor(10000000 + Math.random() * 90000000);
-        newDiscordUser.verificationNumber = verificationNumber;
+        const verificationCode = Math.floor(10000000 + Math.random() * 90000000);
+        newDiscordUser.verificationCode = verificationCode;
 
         // Optionally save the entity if needed
         await this.discordUserRepository.save(newDiscordUser);
 
         const channel = await interaction.user.createDM(true);
-        channel.send(`http://localhost:3000/registration/${verificationNumber}`);
+        channel.send(`http://localhost:3000/discord/sync/${verificationCode}`);
 
         interaction.reply({ content: 'DM을 확인하세요!', ephemeral: true });
 
         return {
-            verificationNumber: newDiscordUser.verificationNumber
+            verificationCode: newDiscordUser.verificationCode
         };
     }
-    async connect(dto: RegistrationDto, user: User) {
+    async sync(dto: RegistrationDto, user: User) {
+        const discordUser = await this.discordUserRepository.findOne({
+            where: {
+                verificationCode: dto.verificationCode
+            }
+        });
 
+        if (!discordUser) {
+            throw new InvalidAccessException("해당 유저는 존재하지 않습니다.");
+        }
+
+        discordUser.user = user;
+
+        await this.discordUserRepository.save(discordUser);
     }
 }

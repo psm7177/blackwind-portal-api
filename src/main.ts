@@ -10,6 +10,7 @@ async function bootstrap() {
     .setTitle('Blackwind Portal API')
     .setDescription('API 문서 설명')
     .setVersion('1.0')
+    .addBearerAuth()
     .addTag('auth')
     .build();
     
